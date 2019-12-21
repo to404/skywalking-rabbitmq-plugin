@@ -1,0 +1,1 @@
+# skywalking-rabbitmq-plugin
