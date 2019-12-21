@@ -60,10 +60,5 @@
             <version>2.2.0.RELEASE</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.zxy.common</groupId>
-            <artifactId>common-message</artifactId>
-            <version>0.0.2</version>
-        </dependency>
     </dependencies>
 </project>

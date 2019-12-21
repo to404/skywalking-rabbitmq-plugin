@@ -33,7 +33,7 @@ public class RabbitMQConsumerInvokeInstrumentation extends ClassInstanceMethodsE
 
     public static final String INTERCEPTOR_CLASS = "org.apache.skywalking.apm.plugin.rabbitmq.RabbitMQConsumerInvokeInterceptor";
     public static final String ENHANCE_CLASS_PRODUCER = "org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer";
-    public static final String ENHANCE_METHOD_DISPATCH = "doInvokeListener";
+    public static final String ENHANCE_METHOD_DISPATCH = "invokeListener";
     public static final String INTERCEPTOR_CONSTRUCTOR = "org.apache.skywalking.apm.plugin.rabbitmq.RabbitMQProducerAndConsumerConstructorInterceptor";
     @Override
     public ConstructorInterceptPoint[] getConstructorsInterceptPoints() {

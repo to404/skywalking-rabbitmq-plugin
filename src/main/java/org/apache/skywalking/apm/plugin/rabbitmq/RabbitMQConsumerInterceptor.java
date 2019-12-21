@@ -18,7 +18,8 @@
 
 package org.apache.skywalking.apm.plugin.rabbitmq;
 
-import com.zxy.common.serialize.hessian.HessianSerializer;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import org.apache.skywalking.apm.agent.core.context.CarrierItem;
 import org.apache.skywalking.apm.agent.core.context.ContextCarrier;
 import org.apache.skywalking.apm.agent.core.context.ContextManager;
@@ -29,7 +30,6 @@ import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedI
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceMethodsAroundInterceptor;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
-import org.apache.skywalking.apm.util.StringUtil;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 
@@ -43,24 +43,25 @@ public class RabbitMQConsumerInvokeInterceptor implements InstanceMethodsAroundI
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, MethodInterceptResult result) throws Throwable {
         ContextCarrier contextCarrier = new ContextCarrier();
 
-         String url = (String) objInst.getSkyWalkingDynamicField();
-        org.springframework.amqp.core.Message message = (Message) allArguments[1];
+        Connection connection = ((Channel)allArguments[0]).getConnection();
+        String url =  connection.getAddress().toString().replace("/","") + ":" + connection.getPort();
+        Message message = (Message) allArguments[1];
         MessageProperties msgProperties = message.getMessageProperties();
-        String msgTopic = msgProperties.getReceivedRoutingKey();  
-        // 此处将message中的信息打印在trace中，方便追踪，官方源码未打印出来     
+        String msgTopic = msgProperties.getReceivedRoutingKey();
+        // 此处将message中的信息打印在trace中，方便追踪，官方源码未打印出来 
         String msgContent = new String(message.getBody());
-        //############
-        AbstractSpan activeSpan = ContextManager.createEntrySpan(OPERATE_NAME_PREFIX + "Topic/" + msgTopic + 
+        AbstractSpan activeSpan = ContextManager.createEntrySpan(OPERATE_NAME_PREFIX + "Topic/" + msgTopic +
                 CONSUMER_OPERATE_NAME_SUFFIX + msgContent, null).start(System.currentTimeMillis());
+
         Tags.MQ_BROKER.set(activeSpan, url);
-//        Tags.MQ_TOPIC.set(activeSpan,envelope.getExchange());
+        Tags.MQ_TOPIC.set(activeSpan, msgProperties.getReceivedExchange());
         Tags.MQ_QUEUE.set(activeSpan, msgProperties.getReceivedRoutingKey());
         activeSpan.setComponent(ComponentsDefine.RABBITMQ_CONSUMER);
         SpanLayer.asMQ(activeSpan);
         CarrierItem next = contextCarrier.items();
         while (next.hasNext()) {
             next = next.next();
-            if (msgContent.getHeaders() != null && msgContent.getHeader(next.getHeadKey()) != null) {
+            if (msgProperties.getHeaders() != null && msgProperties.getHeader(next.getHeadKey()) != null) {
                 next.setHeadValue(msgProperties.getHeader(next.getHeadKey()).toString());
             }
         }
