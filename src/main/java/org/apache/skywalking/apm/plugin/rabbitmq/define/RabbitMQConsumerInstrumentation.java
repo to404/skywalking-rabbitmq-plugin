@@ -31,14 +31,14 @@ import static org.apache.skywalking.apm.agent.core.plugin.bytebuddy.ArgumentType
 
 public class RabbitMQConsumerInstrumentation extends ClassInstanceMethodsEnhancePluginDefine {
 
-    public static final String INTERCEPTOR_CLASS = "org.apache.skywalking.apm.plugin.rabbitmq.RabbitMQConsumerInvokeInterceptor";
+    public static final String INTERCEPTOR_CLASS = "org.apache.skywalking.apm.plugin.rabbitmq.RabbitMQConsumerInterceptor";
     public static final String ENHANCE_CLASS_PRODUCER = "org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer";
     public static final String ENHANCE_METHOD_DISPATCH = "invokeListener";
     public static final String INTERCEPTOR_CONSTRUCTOR = "org.apache.skywalking.apm.plugin.rabbitmq.RabbitMQProducerAndConsumerConstructorInterceptor";
     @Override
     public ConstructorInterceptPoint[] getConstructorsInterceptPoints() {
         return new ConstructorInterceptPoint[] {
-            new ConstructorInterceptPoint() {
+                new ConstructorInterceptPoint() {
                     @Override public ElementMatcher<MethodDescription> getConstructorMatcher() {
                         return takesArgumentWithType(0,"com.rabbitmq.client.impl.AMQConnection");
                     }
@@ -53,7 +53,7 @@ public class RabbitMQConsumerInstrumentation extends ClassInstanceMethodsEnhance
     @Override
     public InstanceMethodsInterceptPoint[] getInstanceMethodsInterceptPoints() {
         return new InstanceMethodsInterceptPoint[] {
-            new InstanceMethodsInterceptPoint() {
+                new InstanceMethodsInterceptPoint() {
                     @Override public ElementMatcher<MethodDescription> getMethodsMatcher() {
                         return named(ENHANCE_METHOD_DISPATCH).and(takesArgumentWithType(1,"org.springframework.amqp.core.Message"));
                     }
@@ -64,7 +64,7 @@ public class RabbitMQConsumerInstrumentation extends ClassInstanceMethodsEnhance
                     }
 
                     @Override public boolean isOverrideArgs() {
-                        return true;
+                        return false;
                     }
                 }
         };
