@@ -35,7 +35,7 @@ import org.springframework.amqp.core.MessageProperties;
 
 import java.lang.reflect.Method;
 
-public class RabbitMQConsumerInvokeInterceptor implements InstanceMethodsAroundInterceptor {
+public class RabbitMQConsumerInterceptor implements InstanceMethodsAroundInterceptor {
     public static final String OPERATE_NAME_PREFIX = "RabbitMQ/";
     public static final String CONSUMER_OPERATE_NAME_SUFFIX = "/Consumer/Invoke/";
 
@@ -48,7 +48,7 @@ public class RabbitMQConsumerInvokeInterceptor implements InstanceMethodsAroundI
         Message message = (Message) allArguments[1];
         MessageProperties msgProperties = message.getMessageProperties();
         String msgTopic = msgProperties.getReceivedRoutingKey();
-        // 此处将message中的信息打印在trace中，方便追踪，官方源码未打印出来 
+        // show message content in trace
         String msgContent = new String(message.getBody());
         AbstractSpan activeSpan = ContextManager.createEntrySpan(OPERATE_NAME_PREFIX + "Topic/" + msgTopic +
                 CONSUMER_OPERATE_NAME_SUFFIX + msgContent, null).start(System.currentTimeMillis());
